@@ -71,7 +71,7 @@
 
                   enterShell = ''
                     export PATH=$PATH:/home/porebski/.cargo/bin
-                    # hello
+                    cargo version
                   '';
 
                   # processes.hello.exec = "hello";
