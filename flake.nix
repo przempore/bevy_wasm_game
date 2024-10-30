@@ -6,7 +6,8 @@
     systems.url = "github:nix-systems/default";
     devenv.url = "github:cachix/devenv";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    fenix.url = "github:nix-community/fenix";
+    fenix.inputs = { nixpkgs.follows = "nixpkgs"; };
   };
 
   nixConfig = {
@@ -14,7 +15,7 @@
     extra-substituters = "https://devenv.cachix.org";
   };
 
-  outputs = { self, nixpkgs, devenv, systems, rust-overlay, ... } @ inputs:
+  outputs = { self, nixpkgs, devenv, systems, /* rust-overlay, */ ... } @ inputs:
     let
       forEachSystem = nixpkgs.lib.genAttrs (import systems);
     in
@@ -26,14 +27,7 @@
       devShells = forEachSystem
         (system:
           let
-            pkgs = import nixpkgs {
-              inherit system;
-              overlays = [ (import rust-overlay) ];
-            };
-            rustToolchain = pkgs.rust-bin.nightly.latest.default.override {
-              extensions = [ "rust-src" ];
-              targets = [ "wasm32-unknown-unknown" ];
-            };
+            pkgs = nixpkgs.legacyPackages.${system};
           in
           {
             default = devenv.lib.mkShell {
@@ -42,9 +36,6 @@
                 {
                   # https://devenv.sh/reference/options/
                   packages = [ 
-                    rustToolchain
-
-                    pkgs.rust-analyzer
                     pkgs.trunk
                     pkgs.binaryen
                     pkgs.nodePackages.http-server
@@ -61,20 +52,19 @@
                     pkgs.python312Packages.httpserver
                  ];
 
+                  languages.rust.enable = true;
+                  languages.rust.channel = "nightly";
+                  languages.rust.targets = [ "wasm32-unknown-unknown" ];
+
                   env.LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [
                     pkgs.alsaLib
                     pkgs.udev
                     pkgs.vulkan-loader
                   ]}";
 
-                  env.PATH="$PATH:/home/porebski/.cargo/bin";
-
                   enterShell = ''
-                    export PATH=$PATH:/home/porebski/.cargo/bin
                     cargo version
                   '';
-
-                  # processes.hello.exec = "hello";
                 }
               ];
             };

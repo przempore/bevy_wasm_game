@@ -3,6 +3,14 @@
 
 
 # it also works with `basic-http-server`
+## install basic-http-server
+```shell
+cargo install basic-http-server
+```
+## install wasm-bindgen
+```shell
+cargo install wasm-bindgen-cli
+```
 ## Build
 ```shell
 ❯ cargo build --release --target wasm32-unknown-unknown
