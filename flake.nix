@@ -63,6 +63,8 @@
                   ]}";
 
                   enterShell = ''
+                    cargo install basic-http-server
+                    cargo install wasm-bindgen-cli
                     cargo version
                   '';
                 }
